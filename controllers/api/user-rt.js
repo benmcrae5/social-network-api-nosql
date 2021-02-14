@@ -1,19 +1,26 @@
 const router = require('express').Router();
-const { thought, user } = require('../../models');
 const User = require('../../models/user');
+const Thought = require('../../models/thought');
 
 //the /api/user endpoint
 
 //finds all users
 router.get('/', async ( req, res ) => {
-    const users = await User.find();
+    const users = await User.find().populate({
+        path: "thoughts",
+        select: "-__v"
+    })
     res.json(users);
 })
 
 //finds one user by its _id value
 router.get('/:id', async ( req, res ) => {
-    const oneUser = await User.findById(req.params.id);
-    res.json(oneUser);
+    try{
+        const oneUser = await User.findById(req.params.id);
+        res.json(oneUser);
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
 })
 
 //updates one user by its _id value using the body information
@@ -51,6 +58,48 @@ router.delete('/:id', async (req, res) => {
         res.json(removed);
     } catch (err) {
         res.status(500).send(err.message);
+    }
+})
+
+
+//friends list routes
+
+//post a friend to a user's friend list
+router.post("/:userId/friends/:friendId", async ({params, body}, res) => {
+    try {
+        const addedFriend = await User.findOneAndUpdate(
+            { _id: params.userId },
+            { $push: {
+                friends: { _id: params.friendId }
+            }    
+            },
+            { runValidators: true, new: true }
+        )
+        if(!addedFriend) {
+            return res.status(404).send("No user with that ID");
+        }
+        res.json(addedFriend)
+    } catch (err) {
+        res.status(500).send(err.message)
+    }
+})
+
+router.delete("/:userId/friends/:friendId", async ({params, body}, res) => {
+    try {
+        const removedFriend = await User.findOneAndUpdate(
+            { _id: params.userId },
+            { $pull : {
+                friends: { _id: params.friendId }
+            }    
+            },
+            { runValidators: true, new: true }
+        )
+        if(!removedFriend) {
+            return res.status(404).send("No user with that ID")
+        }
+        res.json(removedFriend)
+    } catch (err) {
+        res.status(500).send(err.message)
     }
 })
 

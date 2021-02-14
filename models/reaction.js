@@ -9,7 +9,7 @@ const reactionSchema = new Schema({
     reactionBody: {
         type: String,
         required: "Reaction Body is required",
-        validate: [({ length }) => length >= 280, 'cannot exceed maximum character count (280)']
+        validate: [({ length }) => length <= 280, 'cannot exceed maximum character count (280)']
     },
     username: {
         type: String,
@@ -17,8 +17,7 @@ const reactionSchema = new Schema({
     },
     createdAt: {
         type: Date,
-        default: new Date,
-
+        default: Date.now,
     }
 })
 
