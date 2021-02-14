@@ -4,18 +4,33 @@ const User = require('../../models/user');
 
 //the /api/user endpoint
 
-router.get('/', async ({ body }, res) => {
-    
+//finds all users
+router.get('/', async ( req, res ) => {
+    const users = await User.find();
+    res.json(users);
 })
 
-router.get('/:id', async (req, res) => {
-    res.send('user route "get by id" - functional');
+//finds one user by its _id value
+router.get('/:id', async ( req, res ) => {
+    const oneUser = await User.findById(req.params.id);
+    res.json(oneUser);
 })
 
-router.put('/', async (req, res) => {
-    res.send('user route "put" - functional');
+//updates one user by its _id value using the body information
+router.put('/:id', async ( { body, params }, res ) => {
+    try {
+        const result = await User.findOneAndUpdate(
+            { _id: params.id },
+            body,
+            { new: true }
+            )
+        res.json(result);
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
 })
 
+//creates a new user
 router.post('/', async ({ body }, res) => {
     try{
         const user = new User(body);
@@ -27,8 +42,16 @@ router.post('/', async ({ body }, res) => {
 
 })
 
-router.delete('/', async (req, res) => {
-    res.send('user route "delete" - functional');
+//deletes user by _id value
+router.delete('/:id', async (req, res) => {
+    try{
+        const removed = await User.remove(
+            { _id: req.params.id }
+        )
+        res.json(removed);
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
 })
 
 module.exports = router;
