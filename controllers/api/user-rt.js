@@ -6,10 +6,11 @@ const Thought = require('../../models/thought');
 
 //finds all users
 router.get('/', async ( req, res ) => {
-    const users = await User.find().populate({
-        path: "thoughts",
-        select: "-__v"
-    })
+    const users = await User.find().populate(
+        { path: "thoughts", select: "-__v" }
+    ).populate(
+        { path: "friends", select: "-__v" }
+    )
     res.json(users);
 })
 
